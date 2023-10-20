@@ -1,0 +1,35 @@
+[tool.poetry]
+name = "hiddenbot"
+version = "0.0.0"
+description = "Dark Web Crawler"
+authors = ["hdks <hdks.bug@gmail.com>"]
+readme = "README.md"
+packages = [{ include = "hiddenbot" }]
+exclude = ["tests/*"]
+
+
+[tool.poetry.scripts]
+hiddenbot = "hiddenbot.main:app"
+
+
+[tool.poetry.dependencies]
+python = ">=3.9,^3.11"
+typer = {extras = ["all"], version = "^0.9.0"}
+beautifulsoup4 = "^4.12.2"
+httpx = {extras = ["socks"], version = "^0.25.0"}
+stem = "^1.8.2"
+
+
+[tool.poetry.group.test.dependencies]
+pytest = "^6.0.0"
+mypy = "^1.4.1"
+types-requests = "^2.31.0.2"
+
+
+[tool.poetry-dynamic-versioning]
+enable = true
+
+
+[build-system]
+requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning>=1.0.0,<2.0.0"]
+build-backend = "poetry_dynamic_versioning.backend"
