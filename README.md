@@ -20,6 +20,10 @@ curl -fsSL -x socks5://127.0.0.1:9050 check.torproject.org | grep Congratulation
 
 If the content "Congratulations. This browser is configured to use Tor." appeared, your Tor proxy configuration is correct.
 
+### Virual Machine (Optional)
+
+It's recommended to use a virtual machine for connecting safely to dark web.
+
 <br />
 
 ## Usage
