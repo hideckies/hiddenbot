@@ -9,6 +9,7 @@ Access to onion services, we need to use **Tor** proxy.
 ```sh
 # If tor is not installed...
 sudo apt install tor
+
 tor &
 ```
 
@@ -22,12 +23,12 @@ If the content "Congratulations. This browser is configured to use Tor." appeare
 
 ### Virual Machine (Optional)
 
-It's recommended to use a virtual machine for connecting safely to dark web.
+It's recommended to use a virtual machine for more securely accessing to dark web.
 
 <br />
 
 ## Usage
 
 ```sh
-hiddenbot run
+hiddenbot run -u https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/
 ```

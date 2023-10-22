@@ -1,9 +1,33 @@
+from bs4 import BeautifulSoup
 import httpx
 from typing import Optional
-from bs4 import BeautifulSoup
+import re
+from tld import get_tld
 
+# Default SOCKS5 proxy
 DEFAULT_SOCKS5_HOST = '127.0.0.1'
 DEFAULT_SOCKS5_PORT = '9050'
+
+# Regular expressions
+REGEX_IPV4_ADDRESS = '((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])'
+
+
+def check_onion_url(url: str) -> bool:
+    """
+    Check if specified URL is an onion or not.
+
+    Parameters
+    --------------------------------------
+    url: str
+        Specified URL
+
+    Returns
+    --------------------------------------
+    bool
+        Specified URL is onion or not.
+    """
+    return get_tld(url) == 'onion'
+
 
 def get_proxy(proxy: str) -> Optional[tuple[str, str]]:
     """
@@ -16,16 +40,51 @@ def get_proxy(proxy: str) -> Optional[tuple[str, str]]:
         return None
 
 
-def check_tor(client: httpx.Client) -> None:
+def check_tor(client: httpx.Client) -> tuple[bool, str]:
     """
-    Check if user is using Tor.
+    Check if user is using Tor proxy by accessing `check.torproject.org`.
+
+    Parameters
+    ---------------------------------------
+    client: httpx.Client
+        A httpx client to request
+
+    Returns
+    ---------------------------------------
+    bool
+        User client is connecting Tor or not
+    str
+        Tor Ip address if user is connecting Tor
     """
     url = "https://check.torproject.org/"
-    resp = client.get(url)
-    soup = BeautifulSoup(resp.text, 'html.parser')
+
+    try:
+        resp = client.get(url)
+        soup = BeautifulSoup(resp.text, 'html.parser')
+    except Exception as e:
+        raise Exception(f"Could not access to {url}. Check proxy setting.")
 
     content = soup.find("div", {"class": "content"})
     if not content:
-        raise Exception("unable to find content.")
+        raise Exception("could not find content.")
     
-    print(content)
+    h1_tag = content.find('h1')
+    if not h1_tag:
+        raise Exception("could not find `h1` tag.")
+
+    connected: bool = False
+    if "Congratulations" in h1_tag.text:
+        connected = True
+
+    # Get Tor IP address
+    ip: str = ""
+    p_tags = content.find_all('p')
+    for p_tag in p_tags:
+        if "Your IP address" in p_tag.text:
+            re_ipv4 = re.compile(REGEX_IPV4_ADDRESS)
+            matches = re.search(re_ipv4, p_tag.text)
+            if matches:
+                ip = matches.group()
+
+
+    return connected, ip
