@@ -1,6 +1,6 @@
-# HiddenBot: Dark Web Crawler
+# HiddenBot
 
-Dark web crawler inspired by [TorBot](https://github.com/DedSecInside/TorBot).
+Dark web crawler inspired by [TorBot](https://github.com/DedSecInside/TorBot), []().
 
 ## Prerequisites
 
@@ -37,3 +37,11 @@ hiddenbot run -u https://xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 # Output results to a json file
 hiddenbot run -u https://xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.onion/ -o onions.json
 ```
+
+- `hiddenbot` currently extracts **title**, **description** and **URL** only.
+- Extracted data is saved to a **JSON** file.
+
+<br />
+
+## Installation
+
