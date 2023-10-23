@@ -1,11 +1,16 @@
 import httpx
+import os
 from rich.console import Console
 import typer
 from typing import Optional
 from typing_extensions import Annotated
 
-from .config import get_proxy, check_onion_url, check_tor
+from .config import get_proxy, check_tor
 from .__version__ import __version__
+from .crawl.crawler import Crawler
+from .crawl.utils import is_url, is_onion_url
+from .save import save_onions
+
 
 app = typer.Typer(pretty_exceptions_enable=False)
 
@@ -30,7 +35,7 @@ def run(
     proxy: Annotated[
         Optional[str], typer.Option(
             "--proxy", "-x",
-            help="A SOCKS5 proxy address e.g. 10.0.0.1:1234",
+            help="A SOCKS5 proxy address e.g. 10.0.0.1:1234.",
             rich_help_panel="Run Options")
     ] = "127.0.0.1:9050",
     depth: Annotated[
@@ -38,10 +43,26 @@ def run(
             "--depth", "-d",
             help="Depth to follow links.",
             rich_help_panel="Run Options")
-    ] = 2
+    ] = 2,
+    output: Annotated[
+        Optional[str], typer.Option(
+            "--output", "-o",
+            help="Output results to specific file.",
+            rich_help_panel="Run Options"
+        )
+    ] = "onions.json",
+    quiet: Annotated[
+        bool, typer.Option(
+            "--quiet", "-q",
+            help="The minimum output while running a crawler.",
+            rich_help_panel="Run Options"
+        )
+    ] = False
 ) -> None:
-    if check_onion_url(url) is False:
-        console.print("Specified URL is not for onion service.", style="red")
+    console = Console(quiet=quiet)
+
+    if is_url(url) is False or is_onion_url(url) is False:
+        console.print("Specified URL is not valid or not onion site.", style="red")
         return
 
     _proxy = get_proxy(proxy)
@@ -68,8 +89,17 @@ def run(
             return
         
         # Start crawling target URL
+        crawler = Crawler(console=console, client=client, url=url, depth=depth, output=output)
+        onion_sites = crawler.run()
+
+        if len(onion_sites) == 0:
+            console.print("There are no onion sites found.")
+            return
+        
+        # Save to a file
+        save_onions(console=console, data=onion_sites, output=output)
 
 
 @app.command(name="version", help="Display the version of HiddenBot", rich_help_panel="General Commands")
 def version() -> None:
-    console.print(f"HiddenBot version {__version__}")
+    print(f"HiddenBot version {__version__}")

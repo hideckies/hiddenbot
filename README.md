@@ -30,5 +30,8 @@ It's recommended to use a virtual machine for more securely accessing to dark we
 ## Usage
 
 ```sh
-hiddenbot run -u https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/
+hiddenbot run -u https://xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.onion/
+
+# Output results to a json file
+hiddenbot run -u https://xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.onion/ -o onions.json
 ```

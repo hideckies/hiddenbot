@@ -19,6 +19,7 @@ beautifulsoup4 = "^4.12.2"
 httpx = {extras = ["socks"], version = "^0.25.0"}
 stem = "^1.8.2"
 tld = "^0.13"
+validators = "^0.22.0"
 
 
 [tool.poetry.group.test.dependencies]

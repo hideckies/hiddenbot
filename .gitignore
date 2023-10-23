@@ -2,3 +2,7 @@
 /dist/*
 
 .vscode/*
+
+# Output file examples
+/onions.json
+/onions.txt
