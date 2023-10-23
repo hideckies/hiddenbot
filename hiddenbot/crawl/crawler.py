@@ -6,9 +6,10 @@ import time
 import sys
 from typing import Optional
 
-from .result import OnionSite
-from .extractor import extract_onion_urls, extract_site_info
 from ..save import save_onions
+from .result import OnionSite
+from .extractor import extract_links, extract_site_info
+from .utils import get_robots_urls, parse_hostname
 
 
 class Crawler:
@@ -16,7 +17,14 @@ class Crawler:
     Crawler class
     """
 
-    def __init__(self, console: Console, client: httpx.Client, url: str, depth: int, output: str = None) -> None:
+    def __init__(
+        self,
+        console: Console,
+        client: httpx.Client,
+        url: str,
+        depth: int,
+        output: str
+    ) -> None:
         self.client = client
         self.url = url
         self.depth = depth
@@ -69,7 +77,6 @@ class Crawler:
             List of newly found onion URLs.
         """
         onion_urls = set()
-
         try:
             for url in urls:
                 time.sleep(2)
@@ -101,12 +108,23 @@ class Crawler:
         set[str]
             List of onion URLs.
         """
+        flag_same_host = False
+
         # Check if the onion site has been already scraped.
         for o in self.onions:
             if o.url == url:
-                self.console.print(f"This onion site has already been scraped.", style="yellow")
                 return None
+            # If the same host exists, add the flag_same_host.
+            # # This flag is used for determining if it's required to get robots.txt or not.
+            if parse_hostname(o.url) == parse_hostname(url):
+                flag_same_host = True
+            
+        # Get robots.txt URLs.
+        robots_urls: Optional[tuple[set[str], set[str]]] = None
+        if flag_same_host is False:
+            robots_urls = get_robots_urls(self.client, url)
 
+        # Scrape
         try:
             resp = self.client.get(url)
         except KeyboardInterrupt as e:
@@ -132,7 +150,7 @@ class Crawler:
         self.add_onion(onion_site)
 
         # Extract onion URLs from the content.
-        onion_urls = extract_onion_urls(soup, url)   
+        onion_urls = extract_links(soup, url, robots_urls)   
    
         return onion_urls  
         

@@ -1,6 +1,8 @@
+import httpx
 import re
 from tld import get_tld
-from urllib.parse import urlparse
+from typing import Optional
+from urllib.parse import urlparse, urlsplit
 import validators
 from validators import ValidationError
 
@@ -26,11 +28,50 @@ def is_onion_url(url: str) -> bool:
     return is_onion
 
 
-def get_hostname(url: str) -> str:
+def get_robots_urls(client: httpx.Client, url: str) -> Optional[tuple[set[str], set[str]]]:
     """
-    Get hostname from URL
+    Get URLs in `robots.txt`.
+    """
+    allowed_urls = set()
+    disallowed_urls = set()
+
+    base_url = "{0.scheme}://{0.netloc}".format(urlsplit(url))
+    robots_url = base_url + "/robots.txt"
+
+    try:
+        resp = client.get(robots_url)
+    except:
+        return None
+
+    matches_allow = re.findall('Allow: (.*)', resp.text)
+    for match in matches_allow:
+        match = ''.join(match)
+        if '*' not in match:
+            allowed_urls.add(base_url + match)
+
+    matches_disallow = re.findall('Disallow: (.*)', resp.text)
+    for match in matches_disallow:
+        match = ''.join(match)
+        if '*' not in match:
+            disallowed_urls.add(base_url + match)
+
+    return allowed_urls, disallowed_urls
+
+
+def parse_hostname(url: str) -> Optional[str]:
+    """
+    Get a hostname from URL
     """
     return urlparse(url).hostname
+
+
+def parse_link_url(url: str, link: str) -> str:
+    """
+    Get a URL from a link
+    """
+    base_url = "{0.scheme}://{0.netloc}".format(urlsplit(url))
+    link = f"/{link}" if link[0] != '/' else link 
+    return f"{base_url}{link}" 
 
 
 def adjust_text(text: str) -> str:

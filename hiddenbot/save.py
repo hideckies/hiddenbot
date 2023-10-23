@@ -2,7 +2,7 @@ import json
 import os
 from rich.console import Console
 
-from .crawl.crawler import OnionSite
+from .crawl.result import OnionSite
 
 
 def save_onions(console: Console, data: list[OnionSite], output: str) -> None:
@@ -22,4 +22,4 @@ def save_json(data: list[OnionSite], output: str) -> None:
     json_objs = [json.loads(d.to_json()) for d in data]
 
     with open(output, 'w') as f:
-        json.dump(json_objs, f, indent=4)
+        json.dump(json_objs, f, indent=4, ensure_ascii=False)

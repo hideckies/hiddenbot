@@ -1,5 +1,4 @@
 import httpx
-import os
 from rich.console import Console
 import typer
 from typing import Optional
@@ -33,19 +32,19 @@ def run(
             rich_help_panel="Run Options")
     ],
     proxy: Annotated[
-        Optional[str], typer.Option(
+        str, typer.Option(
             "--proxy", "-x",
             help="A SOCKS5 proxy address e.g. 10.0.0.1:1234.",
             rich_help_panel="Run Options")
     ] = "127.0.0.1:9050",
     depth: Annotated[
-        Optional[int], typer.Option(
+        int, typer.Option(
             "--depth", "-d",
             help="Depth to follow links.",
             rich_help_panel="Run Options")
     ] = 2,
     output: Annotated[
-        Optional[str], typer.Option(
+        str, typer.Option(
             "--output", "-o",
             help="Output results to specific file.",
             rich_help_panel="Run Options"

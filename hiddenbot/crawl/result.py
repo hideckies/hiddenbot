@@ -23,6 +23,7 @@ class OnionSite:
         """
         console.print()
         console.print(":party_popper: Onion Site Found!")
+        console.print("-"*32)
         console.print(f"Title: {self.title}")
         console.print(f"Description: {self.description}")
         console.print(f"URL: {self.url}")

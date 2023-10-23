@@ -1,5 +1,7 @@
 # HiddenBot: Dark Web Crawler
 
+Dark web crawler inspired by [TorBot](https://github.com/DedSecInside/TorBot).
+
 ## Prerequisites
 
 ### Tor
@@ -23,7 +25,7 @@ If the content "Congratulations. This browser is configured to use Tor." appeare
 
 ### Virual Machine (Optional)
 
-It's recommended to use a virtual machine for more securely accessing to dark web.
+It's recommended to use a virtual machine for more securely connecting to dark web.
 
 <br />
 
