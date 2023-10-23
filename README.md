@@ -45,3 +45,18 @@ hiddenbot run -u https://xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 ## Installation
 
+### From Pip
+
+```sh
+pip install hiddenbot
+```
+
+### From Source
+
+```sh
+git clone https://github.com/hideckies/hiddenbot.git
+cd hiddenbot
+poetry install
+poetry shell
+hiddenbot --help
+```
