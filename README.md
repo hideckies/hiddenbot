@@ -1,6 +1,6 @@
 # HiddenBot
 
-Dark web crawler inspired by [TorBot](https://github.com/DedSecInside/TorBot), []().
+Dark web crawler.
 
 ## Prerequisites
 
