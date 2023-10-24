@@ -28,6 +28,20 @@ def is_onion_url(url: str) -> bool:
     return is_onion
 
 
+def is_http(url: str) -> bool:
+    """
+    Check if specified URL starts with http(s) scheme.
+    """
+    return url.startswith('http')
+
+
+def is_internal_link(link: str) -> bool:
+    """
+    Check if specified link is internal.
+    """
+    return link.startswith('#')
+
+
 def get_robots_urls(client: httpx.Client, url: str) -> Optional[tuple[set[str], set[str]]]:
     """
     Get URLs in `robots.txt`.

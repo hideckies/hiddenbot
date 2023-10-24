@@ -1,11 +1,18 @@
 from bs4 import BeautifulSoup
 from typing import Optional
-from .utils import adjust_text, parse_hostname, parse_link_url, is_onion_url, is_url
+from .utils import (
+    adjust_text, parse_hostname, parse_link_url,
+    is_http, is_internal_link, is_onion_url, is_url
+)
 
 
-def extract_site_info(s: BeautifulSoup, url: str) -> Optional[tuple[str, str]]:
+def extract_site_info(
+    s: BeautifulSoup,
+    url: str,
+    max_content_length: int,
+) -> Optional[tuple[str, str, str]]:
     """
-    Extract the site title, description
+    Extract the site title, description and content.
 
     Parameters
     ---------------------------------
@@ -13,15 +20,19 @@ def extract_site_info(s: BeautifulSoup, url: str) -> Optional[tuple[str, str]]:
         Used for scraping.
     url: str
         URL which is scraped.
+    max_content_words: int
+        Miximum number of words in content to extract.
 
     Returns
     ---------------------------------
-    tuple[str, str]
-        Title and description of the site.
+    tuple[str, str, str]
+        Title, description and content of the site.
     """
+    # Extract title
     title = s.title.text.strip() if s.title is not None else parse_hostname(url)
     title = adjust_text(title)
 
+    # Extract description
     description = s.find('meta', attrs={'name': 'description'})
     if description is None:
         description = ""
@@ -29,7 +40,18 @@ def extract_site_info(s: BeautifulSoup, url: str) -> Optional[tuple[str, str]]:
         description = description.get('content')
         description = adjust_text(description)
 
-    return title, description
+    # Extract contents
+    body = s.find('body')
+    if body is None:
+        content = ""
+    else:
+        content = adjust_text(body.text)
+    # Also, extract the first N words (N: max_content_words)
+    words = content.split()
+    if len(words) > max_content_length:
+        content = " ".join(words[:max_content_length])
+
+    return title, description, content
 
 
 def extract_links(
@@ -62,10 +84,14 @@ def extract_links(
 
     for link in s.find_all('a'):
         url = link.get('href')
-        if url is None or url == origin_url or url in disallowed_urls:
+        if url is None or url == '' or url == origin_url or url in disallowed_urls:
+            continue
+        if is_internal_link(url):
             continue
         if is_url(url) is False:
             url = parse_link_url(origin_url, url)
+        if is_http(url) is False:
+            continue
         if is_onion_url(url) is False:
             continue
         urls.add(url)

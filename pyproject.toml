@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "hiddenbot"
-version = "0.0.0"
+version = "0.0.1"
 description = "Dark Web Crawler"
 authors = ["hdks <hdks.bug@gmail.com>"]
 readme = "README.md"
@@ -23,7 +23,6 @@ validators = "^0.22.0"
 
 
 [tool.poetry.group.test.dependencies]
-pytest = "^6.0.0"
 mypy = "^1.4.1"
 types-requests = "^2.31.0.2"
 

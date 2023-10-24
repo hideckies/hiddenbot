@@ -6,9 +6,10 @@ class OnionSite:
     """
     An onion site information which is crawled.
     """
-    def __init__(self, title: str, description: str, url: str) -> None:
+    def __init__(self, title: str, description: str, content: str, url: str) -> None:
         self.title = title
         self.description = description
+        self.content = content
         self.url = url
 
 
@@ -26,6 +27,8 @@ class OnionSite:
         console.print("-"*32)
         console.print(f"Title: {self.title}")
         console.print(f"Description: {self.description}")
+        console.print(
+            f"Content: {' '.join(self.content.split()[:10])+'...' if len(self.content) >= 10 else self.content}")
         console.print(f"URL: {self.url}")
         console.print()
 

@@ -20,6 +20,7 @@ def save_json(data: list[OnionSite], output: str) -> None:
     Save to a json file.
     """
     json_objs = [json.loads(d.to_json()) for d in data]
+    print(json_objs)
 
     with open(output, 'w') as f:
         json.dump(json_objs, f, indent=4, ensure_ascii=False)

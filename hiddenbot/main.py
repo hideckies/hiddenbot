@@ -23,7 +23,10 @@ def callback() -> None:
     """
 
 
-@app.command(name="run", help="Run HiddenBot.", rich_help_panel="Crawl Commands")
+@app.command(
+    name="run",
+    help="Run HiddenBot.",
+    rich_help_panel="Crawl Commands")
 def run(
     url: Annotated[
         str, typer.Option(
@@ -56,7 +59,14 @@ def run(
             help="The minimum output while running a crawler.",
             rich_help_panel="Run Options"
         )
-    ] = False
+    ] = False,
+    max_content_length: Annotated[
+        int, typer.Option(
+            "--max-content-length",
+            help="Maximum length of content to extract. `-1` is unlimited.",
+            rich_help_panel="Run Options"
+        )
+    ] = 100
 ) -> None:
     console = Console(quiet=quiet)
 
@@ -88,7 +98,9 @@ def run(
             return
         
         # Start crawling target URL
-        crawler = Crawler(console=console, client=client, url=url, depth=depth, output=output)
+        crawler = Crawler(
+            console=console, client=client, url=url, depth=depth,
+            max_content_length=max_content_length, output=output)
         onion_sites = crawler.run()
 
         if len(onion_sites) == 0:
@@ -99,6 +111,9 @@ def run(
         save_onions(console=console, data=onion_sites, output=output)
 
 
-@app.command(name="version", help="Display the version of HiddenBot", rich_help_panel="General Commands")
+@app.command(
+    name="version",
+    help="Display the version of HiddenBot",
+    rich_help_panel="General Commands")
 def version() -> None:
     print(f"HiddenBot version {__version__}")

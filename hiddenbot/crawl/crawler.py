@@ -12,6 +12,9 @@ from .extractor import extract_links, extract_site_info
 from .utils import get_robots_urls, parse_hostname
 
 
+ALLOWED_RESPONSE_STATUS_CODE = [200, 301, 302]
+
+
 class Crawler:
     """
     Crawler class
@@ -23,14 +26,17 @@ class Crawler:
         client: httpx.Client,
         url: str,
         depth: int,
-        output: str
+        max_content_length: int,
+        output: str,
     ) -> None:
+        self.console = console
+
         self.client = client
         self.url = url
         self.depth = depth
+        self.max_content_length = max_content_length
 
         self.output = output
-        self.console = console
 
         self.onions: list[OnionSite] = []
 
@@ -127,6 +133,8 @@ class Crawler:
         # Scrape
         try:
             resp = self.client.get(url)
+            if resp.status_code not in ALLOWED_RESPONSE_STATUS_CODE:
+                return None
         except KeyboardInterrupt as e:
             stop = Confirm.ask("Stop crawling?")
             if stop:
@@ -140,12 +148,12 @@ class Crawler:
         soup = BeautifulSoup(resp.text, 'html.parser')
         
         # Extract the site title and description.
-        info = extract_site_info(soup, url)
+        info = extract_site_info(soup, url, self.max_content_length)
         if info is None:
             return None
-        title, description = info
+        title, description, content = info
 
-        onion_site = OnionSite(title, description, url)
+        onion_site = OnionSite(title, description, content, url)
         onion_site.print_info(self.console)
         self.add_onion(onion_site)
 

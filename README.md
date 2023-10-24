@@ -32,10 +32,13 @@ It's recommended to use a virtual machine for more securely connecting to dark w
 ## Usage
 
 ```sh
-hiddenbot run -u https://xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.onion/
+hiddenbot run -u https://xxx...xxx.onion/
 
-# Output results to a json file
-hiddenbot run -u https://xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.onion/ -o onions.json
+# Depth (-d)
+hiddenbot run -u https://xxx...xxx.onion/ -d 5
+
+# Output (-o)
+hiddenbot run -u https://xxx...xxx.onion/ -o result.json
 ```
 
 - `hiddenbot` currently extracts **title**, **description** and **URL** only.
