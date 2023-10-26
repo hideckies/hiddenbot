@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "hiddenbot"
-version = "0.0.1"
+version = "0.0.2"
 description = "Dark Web Crawler"
 authors = ["hdks <hdks.bug@gmail.com>"]
 readme = "README.md"

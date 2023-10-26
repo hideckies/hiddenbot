@@ -1,7 +1,6 @@
 import httpx
 from rich.console import Console
 import typer
-from typing import Optional
 from typing_extensions import Annotated
 
 from .config import get_proxy, check_tor
