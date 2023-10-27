@@ -35,6 +35,14 @@ def is_http(url: str) -> bool:
     return url.startswith('http')
 
 
+def is_toppage(url: str) -> bool:
+    """
+    Check if specified URL is the top page.
+    """
+    toppage = "{0.scheme}://{0.netloc}".format(urlsplit(url))
+    return url == toppage or url == f"{toppage}/" or url == f"{toppage}/index.html"
+
+
 def is_internal_link(link: str) -> bool:
     """
     Check if specified link is internal.

@@ -8,6 +8,7 @@ from .__version__ import __version__
 from .crawl.crawler import Crawler
 from .crawl.utils import is_url, is_onion_url
 from .save import save_onions
+from .tor import TorProxy
 
 
 app = typer.Typer(pretty_exceptions_enable=False)
@@ -45,6 +46,41 @@ def run(
             help="Depth to follow links.",
             rich_help_panel="Run Options")
     ] = 2,
+    delay: Annotated[
+        int, typer.Option(
+            "--delay",
+            help="Delay between requests.",
+            rich_help_panel="Run Options"
+        )
+    ] = 2,
+    follow_redirects: Annotated[
+        bool, typer.Option(
+            "--follow-redirects", "-r",
+            help="Follow redirects.",
+            rich_help_panel="Run Options"
+        )
+    ] = False,
+    timeout: Annotated[
+        int, typer.Option(
+            "--timeout", "-t",
+            help="Timeout",
+            rich_help_panel="Run Options"
+        )
+    ] = 60,
+    max_content_length: Annotated[
+        int, typer.Option(
+            "--max-content-length",
+            help="Maximum length of content to extract. `-1` is unlimited.",
+            rich_help_panel="Run Options"
+        )
+    ] = 100,
+    only_toppage: Annotated[
+        bool, typer.Option(
+            "--top",
+            help="Crawl only the top page of each site.",
+            rich_help_panel="Run Options"
+        )
+    ] = False,
     output: Annotated[
         str, typer.Option(
             "--output", "-o",
@@ -59,13 +95,13 @@ def run(
             rich_help_panel="Run Options"
         )
     ] = False,
-    max_content_length: Annotated[
-        int, typer.Option(
-            "--max-content-length",
-            help="Maximum length of content to extract. `-1` is unlimited.",
+    verbose: Annotated[
+        bool, typer.Option(
+            "--verbose", "-v",
+            help="Verbose mode.",
             rich_help_panel="Run Options"
         )
-    ] = 100
+    ] = False,
 ) -> None:
     console = Console(quiet=quiet)
 
@@ -79,9 +115,16 @@ def run(
         return
     socks5_host, socks5_port = _proxy
 
+    # Setup TorProxy instance
+    # tp = TorProxy(socks5_host, int(socks5_port)) <- currently not working and I don't know the reason.
+
     socks5_proxy = f'socks5://{socks5_host}:{socks5_port}'
     console.print(f"Proxy: {socks5_proxy}")
-    with httpx.Client(timeout=60, proxies=socks5_proxy) as client:
+    with httpx.Client(
+        timeout=timeout,
+        proxies=socks5_proxy,
+        follow_redirects=follow_redirects,
+    ) as client:
         result = check_tor(client)
         if result is None:
             return
@@ -98,8 +141,11 @@ def run(
         
         # Start crawling target URL
         crawler = Crawler(
-            console=console, client=client, url=url, depth=depth,
-            max_content_length=max_content_length, output=output)
+            console=console, client=client, url=url,
+            depth=depth, delay=delay,
+            max_content_length=max_content_length,
+            only_toppage=only_toppage,
+            output=output, verbose=verbose)
         onion_sites = crawler.run()
 
         if len(onion_sites) == 0:

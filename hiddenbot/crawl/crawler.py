@@ -8,8 +8,8 @@ from typing import Optional
 
 from ..save import save_onions
 from .result import OnionSite
-from .extractor import extract_links, extract_site_info
-from .utils import get_robots_urls, parse_hostname
+from .extractor import extract_links, extract_meta_refresh, extract_site_info
+from .utils import get_robots_urls, is_toppage, parse_hostname
 
 
 ALLOWED_RESPONSE_STATUS_CODE = [200, 301, 302]
@@ -26,17 +26,23 @@ class Crawler:
         client: httpx.Client,
         url: str,
         depth: int,
+        delay: int,
         max_content_length: int,
+        only_toppage: bool,
         output: str,
+        verbose: bool,
     ) -> None:
         self.console = console
 
         self.client = client
         self.url = url
         self.depth = depth
+        self.delay = delay
         self.max_content_length = max_content_length
+        self.only_toppage = only_toppage
 
         self.output = output
+        self.verbose = verbose
 
         self.onions: list[OnionSite] = []
 
@@ -53,7 +59,7 @@ class Crawler:
         # Crawl each URL
         try:
             for i in range(self.depth):
-                self.console.print(f"\nCrawl ID: {i+1}\n")
+                self.console.print(f"\nCrawl No.{i+1}\n")
                 if len(onion_urls) == 0:
                     self.console.print("There are no more URLs to crawl.")
                     break
@@ -84,12 +90,18 @@ class Crawler:
         """
         onion_urls = set()
         try:
-            for url in urls:
-                time.sleep(2)
+            self.console.print(f"Total URLs to crawl: {len(urls)}")\
+                if self.verbose else None
+
+            for i, url in enumerate(urls):
+                self.console.print(f"Scraping No.{i+1}: {url}")\
+                    if self.verbose else None
+
                 found_urls = self.scrape(url)
                 if found_urls is None or len(found_urls) == 0:
                     continue
                 onion_urls.update(found_urls)
+                time.sleep(self.delay)
         except KeyboardInterrupt as e:
             stop = Confirm.ask("Stop crawling?")
             if stop:
@@ -116,15 +128,23 @@ class Crawler:
         """
         flag_same_host = False
 
+        # When `--top` option (crawl only the top page) is set,
+        # skip this url if it's not the top page.
+        if self.only_toppage and is_toppage(url) is False:
+            self.console.print("Skip: This URL is not top page.", style="yellow")\
+                if self.verbose else None
+            return None
+
         # Check if the onion site has been already scraped.
         for o in self.onions:
             if o.url == url:
                 return None
             # If the same host exists, add the flag_same_host.
-            # # This flag is used for determining if it's required to get robots.txt or not.
+            # This flag is used for determining
+            # if it's required to get robots.txt or not.
             if parse_hostname(o.url) == parse_hostname(url):
                 flag_same_host = True
-            
+
         # Get robots.txt URLs.
         robots_urls: Optional[tuple[set[str], set[str]]] = None
         if flag_same_host is False:
@@ -146,6 +166,13 @@ class Crawler:
             return None
                 
         soup = BeautifulSoup(resp.text, 'html.parser')
+        
+        # Extract redirect URL in meta refresh
+        # such as <meta http-equiv="Refresh" content="0; url=http://xxxx.onion">
+        # If found, return this URL without extracting this page.
+        redirect_url = extract_meta_refresh(soup)
+        if redirect_url is not None:
+            return set([redirect_url])
         
         # Extract the site title and description.
         info = extract_site_info(soup, url, self.max_content_length)

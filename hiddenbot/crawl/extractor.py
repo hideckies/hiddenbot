@@ -1,9 +1,32 @@
 from bs4 import BeautifulSoup
+import re
 from typing import Optional
 from .utils import (
     adjust_text, parse_hostname, parse_link_url,
     is_http, is_internal_link, is_onion_url, is_url
 )
+
+
+def extract_meta_refresh(s: BeautifulSoup) -> Optional[str]:
+    """
+    Extract redirect URL in the meta 'http-equiv=refresh'.
+
+    Parameters
+    ----------------------------------
+    s: BeautifulSoup
+        Used for scraping.
+    """
+    # meta_refresh = s.find('meta', attrs={'http-equiv': 'Refresh'})
+    meta_refresh = s.find('meta', attrs={'http-equiv': re.compile('^refresh$', re.I)})
+    if meta_refresh is None:
+        return None
+    
+    content = meta_refresh.get('content')
+    matched = re.search('url=(.+\.onion.*)', content)
+    if matched is None:
+        return None
+
+    return matched.group(1)
 
 
 def extract_site_info(
@@ -38,7 +61,10 @@ def extract_site_info(
         description = ""
     else:
         description = description.get('content')
-        description = adjust_text(description)
+        if description is None:
+            description = ""
+        else:
+            description = adjust_text(description)
 
     # Extract contents
     body = s.find('body')
@@ -76,8 +102,8 @@ def extract_links(
     """
     urls = set()
 
-    allowed_urls = set()
-    disallowed_urls = set()
+    allowed_urls: set[str] = set()
+    disallowed_urls: set[str] = set()
 
     if robots_urls is not None:
         allowed_urls, disallowed_urls = robots_urls
